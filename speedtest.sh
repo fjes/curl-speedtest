@@ -17,10 +17,11 @@ fileName="100mb.test";
 
 ##need sed now because some european versions of curl insert a , in the speed results
 speedtest () {
-	dlspeed=$(echo -n "scale=2; " && curl --connect-timeout 8 http://$1/$fileName -w "%{speed_download}" -o $fileName -s | sed "s/\,/\./g" && echo "/1048576");
-	echo "$dlspeed" | bc -q | sed "s/$/ MB\/sec/;s/^/\tDownload Speed\: /";
-	ulspeed=$(echo -n "scale=2; " && curl --connect-timeout 8 -F "file=@$fileName" http://$1/webtests/ul.php -w "%{speed_upload}" -s -o /dev/null | sed "s/\,/\./g" && echo "/1048576");
-	echo "$ulspeed" | bc -q | sed "s/$/ MB\/sec/;s/^/\tUpload speed\: /";
+	dlspeed=$(echo -n "" && curl --connect-timeout 8 http://$1/$fileName -w "%{speed_download}" -o $fileName -s | sed "s/\,/\./g" && echo "/1048576 * 100");
+	echo "DBG:: $dlspeed" ;
+	echo "$dlspeed" | bc  | sed "s/$/ MB\/sec/;s/^/\tDownload Speed\: /";
+	ulspeed=$(echo -n "" && curl --connect-timeout 8 -F "file=@$fileName" http://$1/webtests/ul.php -w "%{speed_upload}" -s -o /dev/null | sed "s/\,/\./g" && echo "/1048576 * 100");
+	echo "$ulspeed" | bc  | sed "s/$/ MB\/sec/;s/^/\tUpload speed\: /";
 }
 
 ls "$fileName" 1>/dev/null 2>/dev/null;
@@ -35,7 +36,7 @@ cputest () {
 	cpuCount=$(cat /proc/cpuinfo | grep "model name" | cut -d ":" -f2 | wc -l);
 	echo "CPU: $cpuCount x$cpuName";
 	echo -n "Time taken to generate PI to 5000 decimal places with a single thread: ";
-	(time echo "scale=5000; 4*a(1)" | bc -lq) 2>&1 | grep real |  cut -f2
+	#(time echo "scale=5000; 4*a(1)" | bc -l) 2>&1 | grep real |  cut -f2
 }
 
 disktest () {
@@ -204,11 +205,11 @@ unlink $fileName;
 
 ## start CPU test
 echo "---------------CPU test--------------------";
-cputest;
+#cputest;
 
 ## start disk test
 echo "----------------IO test-------------------";
-disktest;
+#disktest;
 
 ##hints
 echo -e "If you need to speedtest in a specific region:
